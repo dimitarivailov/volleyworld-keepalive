@@ -1,0 +1,19 @@
+name: Mantener despierto el backend de VolleyWorld
+
+# Render duerme el servicio gratuito tras 15 min sin tráfico, y la primera
+# petición tras dormir tarda 30-60s. Este workflow hace una petición ligera
+# cada 10 minutos para que nunca llegue a dormirse. Vive en un repositorio
+# público aparte (no en el de la app) para no gastar minutos del plan
+# gratuito de Actions del repositorio privado.
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping al backend
+        run: curl -fsS https://volley-world-app.onrender.com/api/health
