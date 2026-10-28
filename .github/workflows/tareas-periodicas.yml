@@ -1,0 +1,40 @@
+name: Tareas periódicas
+
+# Llamada programada a la aplicación. Se hace desde este repositorio público
+# para no gastar el cupo de minutos de Actions de los repositorios privados.
+# La dirección y la cabecera de acceso viven en los secretos del repositorio
+# (SCHEDULER_URL y CRON_HEADER), nunca en el código, y el registro solo
+# imprime el código HTTP de la respuesta.
+#
+# Si los secretos no están configurados, avisa y termina sin error.
+
+on:
+  schedule:
+    # Minuto 17 y no 0: GitHub avisa de retrasos justo al inicio de cada hora.
+    - cron: '17 */4 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ejecutar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Llamada periódica
+        env:
+          OBJETIVO: ${{ secrets.SCHEDULER_URL }}
+          CABECERA: ${{ secrets.CRON_HEADER }}
+        run: |
+          if [ -z "$OBJETIVO" ] || [ -z "$CABECERA" ]; then
+            echo "::warning::Faltan los secretos del repositorio; no se hace nada."
+            exit 0
+          fi
+          # -s sin -S y salida a /dev/null: no se imprime nada de la respuesta
+          # ni de los errores de curl, que podrían incluir la dirección.
+          # --max-time cubre que el servicio esté dormido (tarda hasta ~60 s).
+          status=$(curl -s -o /dev/null -w '%{http_code}' --max-time 120 --retry 2 \
+            -X POST -H "$CABECERA" "$OBJETIVO") || status="sin respuesta"
+          echo "Código HTTP: $status"
+          case "$status" in
+            2??) ;;
+            *) echo "::error::La llamada no devolvió un código 2xx."; exit 1 ;;
+          esac

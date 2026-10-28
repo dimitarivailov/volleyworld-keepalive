@@ -1,0 +1,32 @@
+name: Mantenimiento
+
+# GitHub desactiva los workflows programados de un repositorio público si
+# pasan 60 días sin actividad (ya ocurrió una vez con el ping de salud). Una
+# vez a la semana, este workflow mira cuándo fue el último commit y, si hace
+# más de 30 días, añade uno vacío para reiniciar esa cuenta.
+
+on:
+  schedule:
+    - cron: '23 5 * * 1'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  actividad:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reiniciar la cuenta de inactividad si hace falta
+        run: |
+          ultimo=$(git log -1 --format=%ct)
+          dias=$(( ( $(date +%s) - ultimo ) / 86400 ))
+          echo "Último commit hace $dias días."
+          if [ "$dias" -ge 30 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit --allow-empty -m "Mantenimiento: evitar que GitHub desactive los workflows por inactividad"
+            git push
+          fi
