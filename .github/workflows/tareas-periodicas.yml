@@ -1,6 +1,6 @@
 name: Tareas periódicas
 
-# Llamada programada a la aplicación. Se hace desde este repositorio público
+# Llamada programada a la aplicación (cada 2 horas). Se hace desde este repositorio público
 # para no gastar el cupo de minutos de Actions de los repositorios privados.
 # La dirección y la cabecera de acceso viven en los secretos del repositorio
 # (SCHEDULER_URL y CRON_HEADER), nunca en el código, y el registro solo
@@ -11,7 +11,11 @@ name: Tareas periódicas
 on:
   schedule:
     # Minuto 17 y no 0: GitHub avisa de retrasos justo al inicio de cada hora.
-    - cron: '17 */4 * * *'
+    # Cada 2 h y no cada 4: GitHub retrasa o se salta ejecuciones programadas
+    # (el ping de salud llegó a ejecutarse solo cada 2-6 h en vez de cada 10
+    # min), y así una ejecución perdida no deja un hueco largo. Repetir la
+    # llamada es inofensivo (es idempotente).
+    - cron: '17 */2 * * *'
   workflow_dispatch: {}
 
 jobs:

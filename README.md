@@ -9,7 +9,7 @@ programadas de GitHub Actions (`.github/workflows/`):
   segundos mientras se despierta; con este ping se reducen esas esperas
   (GitHub no garantiza la hora exacta de las tareas programadas, así que no
   las evita del todo).
-- `tareas-periodicas.yml`: una llamada programada a la aplicación cada pocas
+- `tareas-periodicas.yml`: una llamada programada a la aplicación cada 2
   horas. Su dirección y su clave de acceso están en los secretos del
   repositorio (`SCHEDULER_URL` y `CRON_HEADER`).
 - `mantenimiento.yml`: una vez a la semana comprueba el último commit y, si
