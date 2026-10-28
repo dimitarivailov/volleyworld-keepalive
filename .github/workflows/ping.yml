@@ -1,0 +1,28 @@
+name: Ping de salud
+
+# Render duerme el servicio gratuito tras 15 min sin tráfico, y la primera
+# petición tras dormir tarda 30-60 s. Este workflow hace una petición ligera
+# cada 10 minutos para que no llegue a dormirse. Vive en un repositorio
+# público aparte (no en el de la app) para no gastar minutos del plan
+# gratuito de Actions del repositorio privado.
+#
+# Nota: GitHub no garantiza la hora exacta de los workflows programados (en
+# horas punta los retrasa o se salta alguna ejecución), así que esto reduce
+# las veces que el servicio se duerme pero no lo evita al 100 %.
+#
+# Este fichero se creó con otro nombre que el anterior (keepalive.yml) a
+# propósito: GitHub había desactivado ese por inactividad del repositorio y
+# un workflow nuevo nace activado sin que nadie tenga que pulsar nada.
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Ping al backend
+        run: curl -fsS --max-time 90 --retry 2 https://volley-world-app.onrender.com/api/health
